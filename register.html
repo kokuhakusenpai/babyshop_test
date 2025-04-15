@@ -2,31 +2,126 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <title>Đăng ký</title>
+    <title>Đăng ký - Shop Bé Yêu</title>
+    <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <h1>Đăng ký tài khoản</h1>
-    <form id="register-form">
-      <input type="text" id="fullname" placeholder="Họ tên" required /><br />
-      <input type="email" id="email" placeholder="Email" required /><br />
-      <input
-        type="password"
-        id="password"
-        placeholder="Mật khẩu"
-        required
-      /><br />
-      <button type="submit">Đăng ký</button>
-    </form>
+    <div id="header"></div>
+
+    <div
+      style="
+        max-width: 400px;
+        margin: 40px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      "
+    >
+      <h1>Đăng ký tài khoản</h1>
+      <div
+        id="register-error"
+        style="color: red; margin: 10px 0; display: none"
+      ></div>
+      <div
+        id="register-success"
+        style="color: green; margin: 10px 0; display: none"
+      ></div>
+
+      <form id="register-form">
+        <div style="margin-bottom: 15px">
+          <label>Họ tên:</label>
+          <input type="text" id="fullname" placeholder="Họ tên" required />
+        </div>
+
+        <div style="margin-bottom: 15px">
+          <label>Tên đăng nhập:</label>
+          <input
+            type="text"
+            id="username"
+            placeholder="Tên đăng nhập"
+            required
+            pattern="[a-zA-Z0-9_]{4,20}"
+            title="Chỉ được dùng chữ, số và dấu gạch dưới, từ 4-20 ký tự"
+          />
+        </div>
+
+        <div style="margin-bottom: 15px">
+          <label>Email:</label>
+          <input type="email" id="email" placeholder="Email" required />
+        </div>
+
+        <div style="margin-bottom: 15px">
+          <label>Mật khẩu:</label>
+          <input
+            type="password"
+            id="password"
+            placeholder="Mật khẩu"
+            required
+            minlength="6"
+          />
+        </div>
+
+        <div style="margin-bottom: 15px">
+          <label>Xác nhận mật khẩu:</label>
+          <input
+            type="password"
+            id="confirm-password"
+            placeholder="Xác nhận mật khẩu"
+            required
+          />
+        </div>
+
+        <button type="submit">Đăng ký</button>
+      </form>
+
+      <p style="margin-top: 20px">
+        Đã có tài khoản? <a href="login.html">Đăng nhập</a>
+      </p>
+    </div>
+
+    <div id="footer"></div>
 
     <script>
+      // Load components
+      fetch("components/header.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("header").innerHTML = html;
+        });
+
+      fetch("components/footer.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("footer").innerHTML = html;
+        });
+
+      // Handle registration
       document
         .getElementById("register-form")
         .addEventListener("submit", function (e) {
           e.preventDefault();
+
+          const errorDiv = document.getElementById("register-error");
+          const successDiv = document.getElementById("register-success");
+          errorDiv.style.display = "none";
+          successDiv.style.display = "none";
+
+          const password = document.getElementById("password").value;
+          const confirmPassword =
+            document.getElementById("confirm-password").value;
+
+          if (password !== confirmPassword) {
+            errorDiv.textContent = "Mật khẩu xác nhận không khớp";
+            errorDiv.style.display = "block";
+            return;
+          }
+
           const data = {
             fullname: document.getElementById("fullname").value,
+            username: document.getElementById("username").value,
             email: document.getElementById("email").value,
-            password: document.getElementById("password").value,
+            password: password,
           };
 
           fetch("api/register.php", {
@@ -37,11 +132,25 @@
             .then((res) => res.json())
             .then((result) => {
               if (result.success) {
-                alert("Đăng ký thành công!");
-                window.location.href = "login.html";
+                successDiv.textContent =
+                  "Đăng ký thành công! Đang chuyển hướng đến trang đăng nhập...";
+                successDiv.style.display = "block";
+                document.getElementById("register-form").reset();
+
+                // Redirect after delay
+                setTimeout(() => {
+                  window.location.href = "login.html";
+                }, 2000);
               } else {
-                alert("Lỗi: " + result.message);
+                errorDiv.textContent =
+                  result.message || "Có lỗi xảy ra khi đăng ký";
+                errorDiv.style.display = "block";
               }
+            })
+            .catch((error) => {
+              errorDiv.textContent = "Lỗi kết nối đến máy chủ";
+              errorDiv.style.display = "block";
+              console.error(error);
             });
         });
     </script>

@@ -1,6 +1,12 @@
 <?php
-$conn = new mysqli("localhost", "root", "", "shop_db");
-$conn->set_charset("utf8");
+session_start();
+include "../api/db.php";
+
+// Check admin permission
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../login.html");
+    exit;
+}
 
 $orders = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
 ?>
@@ -40,57 +46,58 @@ $orders = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
 <body>
 
 <h2>📦 Quản lý đơn hàng</h2>
+<p><a href="index.php">Trang quản trị</a></p>
 
 <table>
   <thead>
-  <tr>
-  <th>ID</th>
-  <th>Khách hàng</th>
-  <th>Điện thoại</th>
-  <th>Địa chỉ</th>
-  <th>Tổng tiền</th>
-  <th>Ngày tạo</th>
-  <th>Trạng thái</th>
-  <th>Chi tiết</th>
-  <th>Hành động</th>
-</tr>
-
+    <tr>
+      <th>ID</th>
+      <th>Khách hàng</th>
+      <th>Điện thoại</th>
+      <th>Địa chỉ</th>
+      <th>Tổng tiền</th>
+      <th>Ngày tạo</th>
+      <th>Trạng thái</th>
+      <th>Chi tiết</th>
+      <th>Hành động</th>
+    </tr>
   </thead>
   <tbody>
     <?php while ($row = $orders->fetch_assoc()): ?>
       <tr>
-        <td><?= $row['id'] ?></td>
-        <td><?= $row['customer_name'] ?></td>
-        <td><?= $row['customer_phone'] ?></td>
-        <td><?= $row['customer_address'] ?></td>
+        <td><?= htmlspecialchars($row['id']) ?></td>
+        <td><?= htmlspecialchars($row['customer_name']) ?></td>
+        <td><?= htmlspecialchars($row['customer_phone']) ?></td>
+        <td><?= htmlspecialchars($row['customer_address']) ?></td>
         <td><?= number_format($row['total_price']) ?>₫</td>
-        <td><?= $row['created_at'] ?></td>
+        <td><?= htmlspecialchars($row['created_at']) ?></td>
+        <td>
+          <form method="post" action="../api/update_status.php">
+            <input type="hidden" name="order_id" value="<?= $row['id'] ?>">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+            <select name="status" onchange="this.form.submit()">
+              <?php
+                $statuses = ["Chờ xử lý", "Đang giao", "Hoàn tất", "Đã hủy"];
+                foreach ($statuses as $status) {
+                  $selected = $status === $row['status'] ? 'selected' : '';
+                  echo "<option value='" . htmlspecialchars($status) . "' $selected>" . htmlspecialchars($status) . "</option>";
+                }
+              ?>
+            </select>
+          </form>
+        </td>
         <td><button onclick="toggleDetails(<?= $row['id'] ?>)">Xem</button></td>
+        <td>
+          <form method="post" action="../api/delete_order.php" onsubmit="return confirm('Bạn có chắc muốn xóa đơn này?');">
+            <input type="hidden" name="order_id" value="<?= $row['id'] ?>">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+            <button style="color: red;">Xóa</button>
+          </form>
+        </td>
       </tr>
       <tr id="details-<?= $row['id'] ?>" class="order-details">
-        <td colspan="7">Đang tải...</td>
+        <td colspan="9">Đang tải...</td>
       </tr>
-      <td>
-  <form method="post" action="../api/update_status.php">
-    <input type="hidden" name="order_id" value="<?= $row['id'] ?>">
-    <select name="status" onchange="this.form.submit()">
-      <?php
-        $statuses = ["Chờ xử lý", "Đang giao", "Hoàn tất", "Đã hủy"];
-        foreach ($statuses as $status) {
-          $selected = $status === $row['status'] ? 'selected' : '';
-          echo "<option value='$status' $selected>$status</option>";
-        }
-      ?>
-    </select>
-  </form>
-</td>
-<td><button onclick="toggleDetails(<?= $row['id'] ?>)">Xem</button></td>
-<td>
-  <form method="post" action="../api/delete_order.php" onsubmit="return confirm('Bạn có chắc muốn xóa đơn này?');">
-    <input type="hidden" name="order_id" value="<?= $row['id'] ?>">
-    <button style="color: red;">Xóa</button>
-  </form>
-</td>
     <?php endwhile; ?>
   </tbody>
 </table>
@@ -106,7 +113,11 @@ $orders = $conn->query("SELECT * FROM orders ORDER BY created_at DESC");
       fetch("../api/order_details.php?id=" + orderId)
         .then(res => res.text())
         .then(html => {
-          detailsRow.innerHTML = `<td colspan="7">${html}</td>`;
+          detailsRow.innerHTML = `<td colspan="9">${html}</td>`;
+          detailsRow.style.display = "table-row";
+        })
+        .catch(error => {
+          detailsRow.innerHTML = `<td colspan="9">Lỗi khi tải dữ liệu: ${error}</td>`;
           detailsRow.style.display = "table-row";
         });
     }

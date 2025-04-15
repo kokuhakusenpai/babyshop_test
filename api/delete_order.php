@@ -1,13 +1,27 @@
 <?php
-$conn = new mysqli("localhost", "root", "", "babyshop");
-$conn->set_charset("utf8");
+session_start();
+include "db.php";
 
-$order_id = intval($_POST['order_id']);
+// Check admin permission
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../login.html");
+    exit;
+}
 
-// Xóa order_items trước
-$conn->query("DELETE FROM order_items WHERE order_id = $order_id");
+// Verify CSRF token
+if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    die("Invalid request");
+}
 
-// Xóa đơn hàng
-$conn->query("DELETE FROM orders WHERE id = $order_id");
+$order_id = isset($_POST['order_id']) ? intval($_POST['order_id']) : 0;
+
+// Use prepared statements
+$stmt1 = $conn->prepare("DELETE FROM order_items WHERE order_id = ?");
+$stmt1->bind_param("i", $order_id);
+$stmt1->execute();
+
+$stmt2 = $conn->prepare("DELETE FROM orders WHERE id = ?");
+$stmt2->bind_param("i", $order_id);
+$stmt2->execute();
 
 header("Location: ../admin/orders.php");
