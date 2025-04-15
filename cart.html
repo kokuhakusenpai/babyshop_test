@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Giỏ hàng - Shop Bé Yêu</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="header"></div>
+
+    <h2 style="text-align: center; margin-top: 20px">🛒 Giỏ hàng của bạn</h2>
+
+    <div
+      id="cart-items"
+      style="max-width: 800px; margin: auto; padding: 20px"
+    ></div>
+
+    <div style="text-align: center">
+      <button onclick="goToCheckout()">Thanh toán</button>
+    </div>
+
+    <div id="footer"></div>
+
+    <script>
+      fetch("components/header.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("header").innerHTML = html;
+        });
+      fetch("components/footer.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("footer").innerHTML = html;
+        });
+
+      function loadCart() {
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+        const container = document.getElementById("cart-items");
+        container.innerHTML = "";
+
+        if (cart.length === 0) {
+          container.innerHTML = "<p>Không có sản phẩm nào trong giỏ hàng.</p>";
+          return;
+        }
+
+        let total = 0;
+        cart.forEach((item, index) => {
+          total += item.price * item.quantity;
+          container.innerHTML += `
+        <div class="cart-item">
+          <div>
+            <strong>${item.name}</strong><br>
+            Số lượng: ${item.quantity}<br>
+            Đơn giá: ${item.price.toLocaleString()}₫
+          </div>
+          <div>
+            <button onclick="removeItem(${index})">Xóa</button>
+          </div>
+        </div>
+      `;
+        });
+
+        container.innerHTML += `<h3 style="text-align:right;">Tổng cộng: ${total.toLocaleString()}₫</h3>`;
+      }
+
+      function removeItem(index) {
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+        cart.splice(index, 1);
+        localStorage.setItem("cart", JSON.stringify(cart));
+        loadCart();
+      }
+
+      function goToCheckout() {
+        window.location.href = "checkout.html";
+      }
+
+      loadCart();
+    </script>
+  </body>
+</html>

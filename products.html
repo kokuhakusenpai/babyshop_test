@@ -1,0 +1,75 @@
+<!-- products.html -->
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sản phẩm - BabyShop</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="header"></div>
+    <h1>Tất cả sản phẩm</h1>
+
+    <!-- lọc danh sách sản phẩm -->
+    <select id="category-select" onchange="filterByCategory()">
+      <option value="">Tất cả danh mục</option>
+      <option value="Áo">Áo</option>
+      <option value="Quần">Quần</option>
+      <option value="Váy">Váy</option>
+      <option value="Bộ đồ">Bộ đồ</option>
+    </select>
+    <!-- end lọc danh sách sản phẩm -->
+
+    <div class="product-container" id="product-container"></div>
+
+    <div id="footer"></div>
+
+    <script src="js/script.js"></script>
+    <script>
+      fetch("components/header.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("header").innerHTML = html;
+        });
+      fetch("components/footer.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("footer").innerHTML = html;
+        });
+    </script>
+  </body>
+</html>
+<script>
+  //tim kiếm sản phẩm theo danh mục
+  function searchProducts() {
+    const keyword = document.getElementById("search-input").value.trim();
+
+    fetch("api/search_products.php?keyword=" + encodeURIComponent(keyword))
+      .then((res) => res.json())
+      .then((data) => {
+        displayProducts(data);
+      });
+  }
+
+  //hien thị sản phẩm theo danh mục
+  function displayProducts(products) {
+    const container = document.getElementById("product-container");
+    container.innerHTML = "";
+
+    products.forEach((p) => {
+      const div = document.createElement("div");
+      div.className = "product";
+      div.innerHTML = `
+<img src="${p.image}" alt="${p.name}">
+<h3>${p.name}</h3>
+<p>${parseInt(p.price).toLocaleString()}₫</p>
+`;
+      container.appendChild(div);
+    });
+  }
+  function handleSearchKey(e) {
+    if (e.key === "Enter") {
+      searchProducts();
+    }
+  }
+</script>

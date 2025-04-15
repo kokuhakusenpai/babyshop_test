@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Thanh toán - Shop Bé Yêu</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="header"></div>
+
+    <h2 style="text-align: center; margin-top: 20px">💳 Thanh toán</h2>
+
+    <div style="max-width: 600px; margin: auto; padding: 20px">
+      <form id="checkout-form">
+        <label>Họ tên:</label><br />
+        <input type="text" name="name" required /><br /><br />
+
+        <label>Số điện thoại:</label><br />
+        <input type="text" name="phone" required /><br /><br />
+
+        <label>Địa chỉ:</label><br />
+        <textarea name="address" rows="3" required></textarea><br /><br />
+
+        <button type="submit">Gửi đơn hàng</button>
+      </form>
+    </div>
+
+    <div id="footer"></div>
+
+    <script>
+      fetch("components/header.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("header").innerHTML = html;
+        });
+      fetch("components/footer.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("footer").innerHTML = html;
+        });
+
+      document
+        .getElementById("checkout-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const form = e.target;
+          const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+          if (cart.length === 0) {
+            alert("Giỏ hàng đang trống!");
+            return;
+          }
+
+          const data = {
+            name: form.name.value,
+            phone: form.phone.value,
+            address: form.address.value,
+            cart: cart,
+          };
+
+          fetch("api/checkout.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          })
+            .then((res) => res.text())
+            .then((msg) => {
+              alert(msg);
+              localStorage.removeItem("cart");
+              window.location.href = "index.html";
+            });
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>BabyShop - Quần áo trẻ em</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="header"></div>
+
+    <!-- admin -->
+    <div id="admin-link" style="display: none">
+      <a href="admin_products.html">Trang quản trị</a>
+    </div>
+    <!-- end admin -->
+
+    <div id="product-list" class="products"></div>
+
+    <div id="footer"></div>
+
+    <script src="js/script.js"></script>
+    <script>
+      //phân quyền admin
+      fetch("api/who.php")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.role === "admin") {
+            document.getElementById("admin-link").style.display = "block";
+          }
+        });
+      fetch("components/header.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("header").innerHTML = html;
+        });
+      fetch("components/footer.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("footer").innerHTML = html;
+        });
+    </script>
+  </body>
+</html>

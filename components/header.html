@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+    <header>
+        <h1>Shop Bé Yêu</h1>
+        <nav>
+          <a href="index.html">Trang chủ</a>
+          <a href="products.html">Sản phẩm</a>
+          <a href="cart.html">Giỏ hàng</a>
+          <a href="checkout.html">Thanh toán</a>
+        </nav>
+        
+        <!--tìm kiếm-->
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Tìm kiếm sản phẩm..."
+          onkeypress="handleSearchKey(event)"
+        />
+        <button onclick="searchProducts()">Tìm</button>
+        <!--end tìm kiếm-->
+      </header>
+      <script src="js/script.js"></script>
+</body>
+</html>

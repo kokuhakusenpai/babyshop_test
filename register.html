@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Đăng ký</title>
+  </head>
+  <body>
+    <h1>Đăng ký tài khoản</h1>
+    <form id="register-form">
+      <input type="text" id="fullname" placeholder="Họ tên" required /><br />
+      <input type="email" id="email" placeholder="Email" required /><br />
+      <input
+        type="password"
+        id="password"
+        placeholder="Mật khẩu"
+        required
+      /><br />
+      <button type="submit">Đăng ký</button>
+    </form>
+
+    <script>
+      document
+        .getElementById("register-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const data = {
+            fullname: document.getElementById("fullname").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+          };
+
+          fetch("api/register.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          })
+            .then((res) => res.json())
+            .then((result) => {
+              if (result.success) {
+                alert("Đăng ký thành công!");
+                window.location.href = "login.html";
+              } else {
+                alert("Lỗi: " + result.message);
+              }
+            });
+        });
+    </script>
+  </body>
+</html>
