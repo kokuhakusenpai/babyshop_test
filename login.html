@@ -2,29 +2,84 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <title>Đăng nhập</title>
+    <title>Đăng nhập - Shop Bé Yêu</title>
+    <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <h1>Đăng nhập</h1>
-    <form id="login-form">
-      <input type="email" id="email" placeholder="Email" required /><br />
-      <input
-        type="password"
-        id="password"
-        placeholder="Mật khẩu"
-        required
-      /><br />
-      <button type="submit">Đăng nhập</button>
-    </form>
+    <div id="header"></div>
+
+    <div
+      style="
+        max-width: 400px;
+        margin: 40px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      "
+    >
+      <h1>Đăng nhập</h1>
+      <div
+        id="login-error"
+        style="color: red; margin: 10px 0; display: none"
+      ></div>
+
+      <form id="login-form">
+        <div style="margin-bottom: 15px">
+          <label>Tên đăng nhập:</label>
+          <input
+            type="text"
+            id="username"
+            placeholder="Tên đăng nhập"
+            required
+          />
+        </div>
+
+        <div style="margin-bottom: 15px">
+          <label>Mật khẩu:</label>
+          <input
+            type="password"
+            id="password"
+            placeholder="Mật khẩu"
+            required
+          />
+        </div>
+
+        <button type="submit">Đăng nhập</button>
+      </form>
+
+      <p style="margin-top: 20px">
+        Chưa có tài khoản? <a href="register.html">Đăng ký ngay</a>
+      </p>
+    </div>
+
+    <div id="footer"></div>
 
     <script>
+      // Load components
+      fetch("components/header.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("header").innerHTML = html;
+        });
+
+      fetch("components/footer.html")
+        .then((res) => res.text())
+        .then((html) => {
+          document.getElementById("footer").innerHTML = html;
+        });
+
+      // Handle login
       document
         .getElementById("login-form")
         .addEventListener("submit", function (e) {
           e.preventDefault();
 
+          const errorDiv = document.getElementById("login-error");
+          errorDiv.style.display = "none";
+
           const data = {
-            email: document.getElementById("email").value,
+            username: document.getElementById("username").value,
             password: document.getElementById("password").value,
           };
 
@@ -36,12 +91,26 @@
             .then((res) => res.json())
             .then((result) => {
               if (result.success) {
-                localStorage.setItem("user", JSON.stringify(result.user));
-                alert("Đăng nhập thành công!");
-                window.location.href = "index.html";
+                // Store minimal user info
+                localStorage.setItem("username", result.username);
+                localStorage.setItem("role", result.role);
+
+                // Redirect based on role
+                if (result.role === "admin") {
+                  window.location.href = "admin/index.php";
+                } else {
+                  window.location.href = "index.html";
+                }
               } else {
-                alert("Sai email hoặc mật khẩu");
+                errorDiv.textContent =
+                  result.message || "Sai tên đăng nhập hoặc mật khẩu";
+                errorDiv.style.display = "block";
               }
+            })
+            .catch((error) => {
+              errorDiv.textContent = "Lỗi kết nối đến máy chủ";
+              errorDiv.style.display = "block";
+              console.error(error);
             });
         });
     </script>
